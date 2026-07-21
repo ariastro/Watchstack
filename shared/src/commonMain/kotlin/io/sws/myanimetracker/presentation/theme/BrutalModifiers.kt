@@ -11,19 +11,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 
-/**
- * Soft elevation shadow (blurred, no hard offset) — modern mobile look.
- */
 @Composable
 fun Modifier.brutalShadow(
     elevation: Dp = LocalBrutalDimensions.current.radiusSm,
     cornerRadius: Dp = LocalBrutalDimensions.current.radiusMd,
     color: Color = LocalBrutalColors.current.shadow
-): Modifier = this.shadow(elevation = elevation, shape = RoundedCornerShape(cornerRadius), ambientColor = color, spotColor = color)
+): Modifier = this.shadow(
+    elevation = elevation,
+    shape = RoundedCornerShape(cornerRadius),
+    ambientColor = color,
+    spotColor = color
+)
 
-/**
- * Modern "card" surface: rounded fill + subtle border, lifted by a soft shadow.
- */
 @Composable
 fun Modifier.brutalBlock(
     fill: Color = LocalBrutalColors.current.surface,
@@ -39,4 +38,17 @@ fun Modifier.brutalBlock(
         .clip(shape)
         .background(fill)
         .border(borderWidth, borderColor, shape)
+}
+
+@Composable
+fun Modifier.glassSurface(
+    cornerRadius: Dp = LocalBrutalDimensions.current.radiusLg,
+    fill: Color = LocalBrutalColors.current.glass,
+    borderColor: Color = LocalBrutalColors.current.glassBorder
+): Modifier {
+    val shape = RoundedCornerShape(cornerRadius)
+    return this
+        .clip(shape)
+        .background(fill)
+        .border(LocalBrutalDimensions.current.borderThin, borderColor, shape)
 }

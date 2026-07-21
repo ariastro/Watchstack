@@ -1,6 +1,7 @@
 package io.sws.myanimetracker.presentation.screen.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,16 +10,20 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -28,22 +33,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import myanimetracker.shared.generated.resources.Res
-import myanimetracker.shared.generated.resources.ic_arrow_back
-import org.jetbrains.compose.resources.painterResource
 import coil3.compose.AsyncImage
 import io.sws.myanimetracker.domain.model.Anime
 import io.sws.myanimetracker.domain.model.Character
-import io.sws.myanimetracker.domain.model.WatchStatus
+import io.sws.myanimetracker.domain.model.TrackedAnime
 import io.sws.myanimetracker.presentation.PreviewContainer
 import io.sws.myanimetracker.presentation.PreviewData
 import io.sws.myanimetracker.presentation.animation.LocalAnimatedVisibilityScope
@@ -60,6 +66,10 @@ import io.sws.myanimetracker.presentation.theme.LocalBrutalColors
 import io.sws.myanimetracker.presentation.theme.LocalBrutalDimensions
 import io.sws.myanimetracker.presentation.theme.LocalBrutalTypography
 import io.sws.myanimetracker.presentation.theme.brutalBlock
+import io.sws.myanimetracker.presentation.theme.glassSurface
+import myanimetracker.shared.generated.resources.Res
+import myanimetracker.shared.generated.resources.ic_arrow_back
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -67,16 +77,30 @@ fun DetailScreen(
     malId: Int,
     initialAnime: Anime? = null,
     modifier: Modifier = Modifier,
-    viewModel: AnimeDetailViewModel = koinViewModel<AnimeDetailViewModel>()
+    viewModel: AnimeDetailViewModel = koinViewModel<AnimeDetailViewModel>(key = malId.toString())
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var snackbar by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(malId) { viewModel.onIntent(DetailIntent.LoadAnime(malId, initialAnime)) }
-    DetailContent(
-        uiState = uiState,
-        onIntent = viewModel::onIntent,
-        malId = malId,
-        modifier = modifier
-    )
+    LaunchedEffect(viewModel) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is io.sws.myanimetracker.presentation.UiEffect.Snackbar -> snackbar = effect.message
+            }
+        }
+    }
+    Box(modifier = modifier.fillMaxSize()) {
+        DetailContent(
+            uiState = uiState,
+            onIntent = viewModel::onIntent,
+            malId = malId
+        )
+        io.sws.myanimetracker.presentation.components.AppSnackbarHost(
+            message = snackbar,
+            onDismiss = { snackbar = null },
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 100.dp)
+        )
+    }
 }
 
 @Composable
@@ -88,6 +112,7 @@ private fun DetailContent(
 ) {
     val colors = LocalBrutalColors.current
     val dims = LocalBrutalDimensions.current
+    val anime = uiState.anime
 
     Box(
         modifier = modifier
@@ -98,64 +123,109 @@ private fun DetailContent(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(bottom = 84.dp)
+                .padding(
+                    bottom = 100.dp +
+                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                )
         ) {
-            if (uiState.anime != null) {
+            if (anime != null) {
                 DetailTopBar(
-                    title = uiState.anime!!.title,
+                    title = anime.title,
                     onBack = { onIntent(DetailIntent.GoBack) }
                 )
             }
             when {
-                uiState.isLoading -> {
+                uiState.isLoading && anime == null -> {
                     Spacer(modifier = Modifier.height(dims.spacingXxl))
                     LoadingState(modifier = Modifier.padding(horizontal = dims.paddingScreen))
                 }
-                uiState.error != null -> {
+                uiState.error != null && anime == null -> {
+                    val errorMessage = uiState.error
                     Spacer(modifier = Modifier.height(dims.spacingXxl))
                     ErrorState(
-                        message = uiState.error ?: "",
+                        message = errorMessage,
                         onRetry = { onIntent(DetailIntent.LoadAnime(malId)) },
                         modifier = Modifier.padding(horizontal = dims.paddingScreen)
                     )
                 }
-                uiState.anime != null -> DetailAnimeView(
+                anime != null -> DetailAnimeView(
+                    anime = anime,
                     uiState = uiState,
-                    onIntent = onIntent,
-                    sharedKey = uiState.anime!!.malId.toString()
+                    onIntent = onIntent
                 )
             }
         }
 
-        if (uiState.anime != null) {
-            Row(
+        if (anime != null) {
+            // Continuous surface into system nav area (same bg as screen — no white strip).
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = colors.surface.copy(alpha = 0.96f))
                     .align(Alignment.BottomCenter)
-                    .padding(horizontal = dims.paddingScreen, vertical = dims.spacingMd),
-                horizontalArrangement = Arrangement.spacedBy(dims.spacingMd)
+                    .background(color = colors.background)
+                    .border(
+                        width = dims.borderThin,
+                        color = colors.divider,
+                        shape = RoundedCornerShape(topStart = dims.radiusLg, topEnd = dims.radiusLg)
+                    )
+                    .windowInsetsPadding(WindowInsets.navigationBars)
             ) {
-                if (uiState.tracked != null) {
-                    BrutalButton(
-                        text = "EDIT",
-                        onClick = { onIntent(DetailIntent.ShowEditDialog) },
-                        modifier = Modifier.weight(1f),
-                        backgroundColor = colors.primaryContainer,
-                        contentColor = colors.onPrimaryContainer
-                    )
-                    BrutalButton(
-                        text = "REMOVE",
-                        onClick = { onIntent(DetailIntent.RemoveFromTracking) },
-                        modifier = Modifier.weight(1f),
-                        backgroundColor = colors.error
-                    )
-                } else {
-                    BrutalButton(
-                        text = "+ ADD TO LIST",
-                        onClick = { onIntent(DetailIntent.AddToWatchlist("")) },
-                        modifier = Modifier.weight(1f)
-                    )
+                uiState.actionError?.let { actionError ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(colors.error.copy(alpha = 0.15f))
+                            .clickable { onIntent(DetailIntent.DismissActionError) }
+                            .padding(horizontal = dims.paddingScreen, vertical = dims.spacingSm),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = actionError,
+                            style = LocalBrutalTypography.current.bodySmall,
+                            color = colors.error,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = "Dismiss",
+                            style = LocalBrutalTypography.current.labelSmall,
+                            color = colors.error
+                        )
+                    }
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = dims.paddingScreen, vertical = dims.spacingMd),
+                    horizontalArrangement = Arrangement.spacedBy(dims.spacingMd)
+                ) {
+                    if (uiState.tracked != null) {
+                        BrutalButton(
+                            text = "Edit",
+                            onClick = { onIntent(DetailIntent.ShowEditDialog) },
+                            modifier = Modifier.weight(1f),
+                            backgroundColor = colors.primaryContainer,
+                            contentColor = colors.onPrimaryContainer,
+                            gradient = false,
+                            enabled = !uiState.isSaving
+                        )
+                        BrutalButton(
+                            text = "Remove",
+                            onClick = { onIntent(DetailIntent.RemoveFromTracking) },
+                            modifier = Modifier.weight(1f),
+                            backgroundColor = colors.error,
+                            contentColor = Color.White,
+                            gradient = false,
+                            enabled = !uiState.isSaving
+                        )
+                    } else {
+                        BrutalButton(
+                            text = if (uiState.isSaving) "Saving…" else "Add to list",
+                            onClick = { onIntent(DetailIntent.ShowTrackDialog) },
+                            modifier = Modifier.weight(1f),
+                            enabled = !uiState.isSaving
+                        )
+                    }
                 }
             }
         }
@@ -168,24 +238,24 @@ private fun DetailContent(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DetailAnimeView(
+    anime: Anime,
     uiState: DetailUiState,
-    onIntent: (DetailIntent) -> Unit,
-    sharedKey: String? = null
+    onIntent: (DetailIntent) -> Unit
 ) {
-    val anime = uiState.anime!!
     val colors = LocalBrutalColors.current
     val dims = LocalBrutalDimensions.current
     val typo = LocalBrutalTypography.current
     val sharedScope = LocalSharedTransitionScope.current
     val visibilityScope = LocalAnimatedVisibilityScope.current
+    val sharedKey = anime.malId.toString()
 
     var bannerModifier = Modifier
         .fillMaxWidth()
-        .height(280.dp)
+        .height(320.dp)
         .padding(horizontal = dims.paddingScreen)
-        .clip(shape = RoundedCornerShape(dims.radiusLg))
+        .clip(shape = RoundedCornerShape(dims.radiusXl))
         .background(color = colors.surfaceVariant)
-    if (sharedKey != null && sharedScope != null && visibilityScope != null) {
+    if (sharedScope != null && visibilityScope != null) {
         with(sharedScope) {
             bannerModifier = bannerModifier.sharedElement(
                 sharedContentState = rememberSharedContentState(key = "poster-$sharedKey"),
@@ -203,25 +273,37 @@ private fun DetailAnimeView(
                 modifier = Modifier.fillMaxSize()
             )
         }
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f)),
-                        startY = 400f,
-                        endY = 1000f
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.15f),
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.55f),
+                            Color.Black.copy(alpha = 0.9f)
+                        )
+                    )
+                )
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            colors.primary.copy(alpha = 0.2f),
+                            Color.Transparent,
+                            colors.accent.copy(alpha = 0.15f)
+                        )
                     )
                 )
         )
         anime.score?.let {
-            ScoreBadge(
-                score = it,
-                modifier = Modifier.align(Alignment.TopEnd).padding(12.dp)
-            )
+            ScoreBadge(score = it, modifier = Modifier.align(Alignment.TopEnd).padding(16.dp))
         }
-        Column(modifier = Modifier.align(Alignment.BottomStart).padding(16.dp)) {
+        Column(modifier = Modifier.align(Alignment.BottomStart).padding(20.dp)) {
             Text(
                 text = anime.title,
                 style = typo.headlineLarge,
@@ -237,6 +319,29 @@ private fun DetailAnimeView(
                     color = Color.White.copy(alpha = 0.8f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            val uriHandler = LocalUriHandler.current
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (!anime.trailerUrl.isNullOrBlank() || !anime.trailerYoutubeId.isNullOrBlank()) {
+                    BrutalButton(
+                        text = "Trailer",
+                        onClick = {
+                            val url = anime.trailerUrl
+                                ?: "https://www.youtube.com/watch?v=${anime.trailerYoutubeId}"
+                            runCatching { uriHandler.openUri(url) }
+                            onIntent(DetailIntent.OpenTrailer)
+                        },
+                        gradient = true
+                    )
+                }
+                BrutalButton(
+                    text = "Share",
+                    onClick = { onIntent(DetailIntent.Share) },
+                    backgroundColor = colors.surface.copy(alpha = 0.85f),
+                    contentColor = colors.textPrimary,
+                    gradient = false
                 )
             }
         }
@@ -261,11 +366,7 @@ private fun DetailAnimeView(
             anime.year?.let { BrutalChip(text = "$it", color = colors.surfaceVariant) }
             anime.status?.let { BrutalChip(text = it, color = colors.surfaceVariant) }
             if (anime.airing) {
-                BrutalChip(
-                    text = "AIRING",
-                    color = colors.watchingColor,
-                    contentColor = Color.White
-                )
+                BrutalChip(text = "Airing", color = colors.watchingColor, contentColor = Color.White)
             }
         }
 
@@ -276,7 +377,11 @@ private fun DetailAnimeView(
                 verticalArrangement = Arrangement.spacedBy(dims.spacingXs)
             ) {
                 anime.genres.forEach {
-                    BrutalChip(text = it, color = colors.secondary, contentColor = Color.White)
+                    BrutalChip(
+                        text = it,
+                        color = colors.secondary.copy(alpha = 0.2f),
+                        contentColor = colors.secondary
+                    )
                 }
             }
         }
@@ -285,10 +390,10 @@ private fun DetailAnimeView(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .brutalBlock(cornerRadius = dims.radiusMd, shadowElevation = dims.radiusXs)
+                .brutalBlock(cornerRadius = dims.radiusLg, shadowElevation = dims.radiusXs)
                 .padding(dims.spacingLg)
         ) {
-            Text(text = "SYNOPSIS", style = typo.labelLarge, color = colors.primary)
+            Text(text = "Synopsis", style = typo.labelLarge, color = colors.primary)
             Spacer(modifier = Modifier.height(dims.spacingSm))
             Text(
                 text = anime.synopsis ?: "No synopsis available.",
@@ -300,17 +405,17 @@ private fun DetailAnimeView(
         Spacer(modifier = Modifier.height(dims.spacingMd))
         Row(horizontalArrangement = Arrangement.spacedBy(dims.spacingLg)) {
             anime.rating?.let {
-                Text(text = "RATED: $it", style = typo.labelSmall, color = colors.textSecondary)
+                Text(text = "Rated: $it", style = typo.labelSmall, color = colors.textSecondary)
             }
             anime.duration?.let {
-                Text(text = "DURATION: $it", style = typo.labelSmall, color = colors.textSecondary)
+                Text(text = "Duration: $it", style = typo.labelSmall, color = colors.textSecondary)
             }
         }
     }
 
-    if (uiState.tracked != null) {
+    uiState.tracked?.let { tracked ->
         Spacer(modifier = Modifier.height(dims.spacingLg))
-        TrackingCard(uiState = uiState)
+        TrackingCard(tracked = tracked, anime = anime)
     }
 
     if (uiState.characters.isNotEmpty()) {
@@ -326,17 +431,13 @@ private fun DetailAnimeView(
         Column(modifier = Modifier.padding(horizontal = dims.paddingScreen)) {
             SectionHeader(title = "Recommended", modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(dims.spacingMd))
-            LazyRow(
-                contentPadding = PaddingValues(0.dp),
-                horizontalArrangement = Arrangement.spacedBy(dims.gridSpacing)
-            ) {
-                items(
-                    items = uiState.recommendations,
-                    key = { it.anime.malId }
-                ) { rec ->
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(dims.gridSpacing)) {
+                items(items = uiState.recommendations, key = { it.anime.malId }) { rec ->
                     PosterCard(
                         anime = rec.anime,
-                        onClick = { onIntent(DetailIntent.OpenRecommendation(rec.anime.malId, rec.anime)) },
+                        onClick = {
+                            onIntent(DetailIntent.OpenRecommendation(rec.anime.malId, rec.anime))
+                        },
                         modifier = Modifier.width(dims.posterWidth),
                         sharedKey = rec.anime.malId.toString()
                     )
@@ -347,26 +448,22 @@ private fun DetailAnimeView(
 }
 
 @Composable
-private fun DetailTopBar(
-    title: String,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+private fun DetailTopBar(title: String, onBack: () -> Unit, modifier: Modifier = Modifier) {
     val colors = LocalBrutalColors.current
     val dims = LocalBrutalDimensions.current
     val typo = LocalBrutalTypography.current
+    val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(color = colors.background)
+            .padding(top = statusTop)
             .padding(horizontal = dims.paddingScreen, vertical = dims.spacingMd),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(40.dp)
-                .clip(shape = CircleShape)
-                .background(color = colors.surface)
+                .size(44.dp)
+                .glassSurface(cornerRadius = dims.radiusPill)
                 .clickable(onClick = onBack),
             contentAlignment = Alignment.Center
         ) {
@@ -389,9 +486,7 @@ private fun DetailTopBar(
 }
 
 @Composable
-private fun TrackingCard(uiState: DetailUiState) {
-    val tracked = uiState.tracked!!
-    val anime = uiState.anime!!
+private fun TrackingCard(tracked: TrackedAnime, anime: Anime) {
     val colors = LocalBrutalColors.current
     val dims = LocalBrutalDimensions.current
     val typo = LocalBrutalTypography.current
@@ -399,37 +494,39 @@ private fun TrackingCard(uiState: DetailUiState) {
     Column(
         modifier = Modifier
             .padding(horizontal = dims.paddingScreen)
-            .brutalBlock(cornerRadius = dims.radiusMd, shadowElevation = dims.radiusXs)
+            .brutalBlock(cornerRadius = dims.radiusLg, shadowElevation = dims.radiusXs)
             .padding(dims.spacingLg)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "TRACKING", style = typo.titleMedium, color = colors.textPrimary)
+            Text(text = "Tracking", style = typo.titleMedium, color = colors.textPrimary)
             Spacer(modifier = Modifier.width(dims.spacingSm))
             StatusPill(status = tracked.status)
         }
         Spacer(modifier = Modifier.height(dims.spacingMd))
-        DetailInfoRow(label = "Episodes", value = "${tracked.episodesWatched}/${anime.episodes ?: "?"}")
+        DetailInfoRow(
+            label = "Episodes",
+            value = "${tracked.episodesWatched}/${anime.episodes ?: "?"}"
+        )
         Spacer(modifier = Modifier.height(dims.spacingSm))
-        DetailInfoRow(label = "Your rating", value = tracked.userRating?.let { "\u2605 $it" } ?: "\u2014")
+        DetailInfoRow(
+            label = "Your rating",
+            value = tracked.userRating?.let { "\u2605 $it" } ?: "\u2014"
+        )
         Spacer(modifier = Modifier.height(dims.spacingSm))
-        DetailInfoRow(label = "Where to watch", value = tracked.whereToWatch.ifBlank { "\u2014" })
+        DetailInfoRow(
+            label = "Where to watch",
+            value = tracked.whereToWatch.ifBlank { "\u2014" }
+        )
     }
 }
 
 @Composable
-private fun CharacterSection(
-    characters: List<Character>,
-    modifier: Modifier = Modifier
-) {
-    val colors = LocalBrutalColors.current
+private fun CharacterSection(characters: List<Character>, modifier: Modifier = Modifier) {
     val dims = LocalBrutalDimensions.current
-    val typo = LocalBrutalTypography.current
     Column(modifier = modifier.fillMaxWidth()) {
         SectionHeader(title = "Characters & Staff", modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(dims.spacingMd))
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(dims.gridSpacing)
-        ) {
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(dims.gridSpacing)) {
             items(items = characters, key = { it.malId }) { character ->
                 CharacterCard(character = character)
             }

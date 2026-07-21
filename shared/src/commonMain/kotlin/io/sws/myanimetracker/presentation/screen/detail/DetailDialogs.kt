@@ -2,16 +2,19 @@ package io.sws.myanimetracker.presentation.screen.detail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.KeyboardType
@@ -19,7 +22,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.sws.myanimetracker.domain.model.WatchStatus
 import io.sws.myanimetracker.presentation.PreviewContainer
-import io.sws.myanimetracker.presentation.components.BrutalBadge
 import io.sws.myanimetracker.presentation.components.BrutalButton
 import io.sws.myanimetracker.presentation.components.BrutalDialog
 import io.sws.myanimetracker.presentation.theme.LocalBrutalColors
@@ -30,10 +32,11 @@ import io.sws.myanimetracker.presentation.theme.LocalBrutalTypography
 private fun Modifier.dialogField(): Modifier {
     val colors = LocalBrutalColors.current
     val dims = LocalBrutalDimensions.current
+    val shape = RoundedCornerShape(dims.radiusMd)
     return this
         .fillMaxWidth()
-        .background(color = colors.surface)
-        .border(width = dims.borderThin, color = colors.border)
+        .background(color = colors.surfaceVariant, shape = shape)
+        .border(width = dims.borderThin, color = colors.border, shape = shape)
         .padding(dims.spacingMd)
 }
 
@@ -43,27 +46,42 @@ fun TrackDialog(uiState: DetailUiState, onIntent: (DetailIntent) -> Unit) {
     val dims = LocalBrutalDimensions.current
     val typo = LocalBrutalTypography.current
 
-    BrutalDialog(onDismiss = { onIntent(DetailIntent.DismissDialog) }, title = "TRACK ANIME") {
-        Text(text = "STATUS", style = typo.labelLarge, color = colors.primary)
+    BrutalDialog(onDismiss = { onIntent(DetailIntent.DismissDialog) }, title = "Add to list") {
+        Text(text = "Status", style = typo.labelLarge, color = colors.primary)
+        Spacer(modifier = Modifier.height(8.dp))
         WatchStatus.entries.forEach { status ->
+            val selected = uiState.trackDialogStatus == status
+            val accent = when (status) {
+                WatchStatus.WATCHLIST -> colors.watchlistColor
+                WatchStatus.WATCHING -> colors.watchingColor
+                WatchStatus.WATCHED -> colors.watchedColor
+            }
+            val label = when (status) {
+                WatchStatus.WATCHLIST -> "Plan to watch"
+                WatchStatus.WATCHING -> "Watching"
+                WatchStatus.WATCHED -> "Completed"
+            }
             Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+                    .background(
+                        color = if (selected) accent.copy(alpha = 0.2f) else colors.surfaceVariant,
+                        shape = RoundedCornerShape(dims.radiusMd)
+                    )
+                    .clickable { onIntent(DetailIntent.TrackDialogStatusChanged(status)) }
+                    .padding(horizontal = dims.spacingMd, vertical = dims.spacingMd),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                BrutalBadge(
-                    text = if (uiState.trackDialogStatus == status) "■" else "□",
-                    backgroundColor = if (uiState.trackDialogStatus == status) colors.primary else colors.surface,
-                    contentColor = if (uiState.trackDialogStatus == status) colors.textInverse else colors.textPrimary
-                )
-                Text(
-                    text = status.name,
-                    style = typo.titleMedium,
-                    color = colors.textPrimary
-                )
+                Text(text = label, style = typo.titleMedium, color = colors.textPrimary)
+                if (selected) {
+                    Text(text = "Selected", style = typo.labelSmall, color = accent)
+                }
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "WHERE TO WATCH", style = typo.labelLarge, color = colors.primary)
+        Text(text = "Where to watch", style = typo.labelLarge, color = colors.primary)
         Spacer(modifier = Modifier.height(8.dp))
         BasicTextField(
             value = uiState.trackDialogWhere,
@@ -74,31 +92,36 @@ fun TrackDialog(uiState: DetailUiState, onIntent: (DetailIntent) -> Unit) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         BrutalButton(
-            text = "CONFIRM",
+            text = if (uiState.isSaving) "Saving…" else "Confirm",
             onClick = { onIntent(DetailIntent.ConfirmTrack) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !uiState.isSaving
         )
+        uiState.actionError?.let { err ->
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = err, style = typo.bodySmall, color = colors.error)
+        }
     }
 }
 
 @Composable
 fun EditDialog(uiState: DetailUiState, onIntent: (DetailIntent) -> Unit) {
     val colors = LocalBrutalColors.current
-    val dims = LocalBrutalDimensions.current
     val typo = LocalBrutalTypography.current
 
-    BrutalDialog(onDismiss = { onIntent(DetailIntent.DismissDialog) }, title = "EDIT TRACKING") {
-        Text(text = "EPISODES WATCHED", style = typo.labelLarge, color = colors.primary)
+    BrutalDialog(onDismiss = { onIntent(DetailIntent.DismissDialog) }, title = "Edit tracking") {
+        Text(text = "Episodes watched", style = typo.labelLarge, color = colors.primary)
         Spacer(modifier = Modifier.height(8.dp))
         BasicTextField(
             value = uiState.editEpisodes,
             onValueChange = { onIntent(DetailIntent.EditEpisodesChanged(it)) },
             textStyle = typo.bodyMedium.copy(color = colors.textPrimary),
             cursorBrush = SolidColor(colors.primary),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.dialogField()
         )
         Spacer(modifier = Modifier.height(12.dp))
-        Text(text = "YOUR RATING (1-10)", style = typo.labelLarge, color = colors.primary)
+        Text(text = "Your rating (1-10)", style = typo.labelLarge, color = colors.primary)
         Spacer(modifier = Modifier.height(8.dp))
         BasicTextField(
             value = uiState.editRating,
@@ -109,7 +132,7 @@ fun EditDialog(uiState: DetailUiState, onIntent: (DetailIntent) -> Unit) {
             modifier = Modifier.dialogField()
         )
         Spacer(modifier = Modifier.height(12.dp))
-        Text(text = "WHERE TO WATCH", style = typo.labelLarge, color = colors.primary)
+        Text(text = "Where to watch", style = typo.labelLarge, color = colors.primary)
         Spacer(modifier = Modifier.height(8.dp))
         BasicTextField(
             value = uiState.editWhere,
@@ -119,7 +142,7 @@ fun EditDialog(uiState: DetailUiState, onIntent: (DetailIntent) -> Unit) {
             modifier = Modifier.dialogField()
         )
         Spacer(modifier = Modifier.height(12.dp))
-        Text(text = "NOTES", style = typo.labelLarge, color = colors.primary)
+        Text(text = "Notes", style = typo.labelLarge, color = colors.primary)
         Spacer(modifier = Modifier.height(8.dp))
         BasicTextField(
             value = uiState.editNotes,
@@ -130,7 +153,7 @@ fun EditDialog(uiState: DetailUiState, onIntent: (DetailIntent) -> Unit) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         BrutalButton(
-            text = "SAVE",
+            text = if (uiState.isSaving) "Saving…" else "Save",
             onClick = {
                 onIntent(
                     DetailIntent.SaveEdit(
@@ -141,8 +164,13 @@ fun EditDialog(uiState: DetailUiState, onIntent: (DetailIntent) -> Unit) {
                     )
                 )
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !uiState.isSaving
         )
+        uiState.actionError?.let { err ->
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = err, style = typo.bodySmall, color = colors.error)
+        }
     }
 }
 

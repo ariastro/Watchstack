@@ -30,7 +30,7 @@ data class BrutalTypography(
     val mono: TextStyle
 )
 
-private fun brutal(
+private fun style(
     family: FontFamily,
     fontSize: TextUnit,
     fontWeight: FontWeight,
@@ -44,12 +44,6 @@ private fun brutal(
     letterSpacing = letterSpacing ?: TextUnit.Unspecified
 )
 
-/**
- * Builds the app typography from bundled fonts.
- * - Poppins: oversized geometric display / headlines / titles
- * - Inter: readable body copy
- * - Space Mono: technical labels + mono (the brutalist texture)
- */
 @Composable
 fun rememberBrutalTypography(): BrutalTypography {
     val poppins = FontFamily(
@@ -71,48 +65,46 @@ fun rememberBrutalTypography(): BrutalTypography {
     )
 
     return BrutalTypography(
-        displayLarge = brutal(poppins, 48.sp, FontWeight.Black, 50.sp, (-2).sp),
-        displayMedium = brutal(poppins, 36.sp, FontWeight.Black, 38.sp, (-1.5).sp),
-        displaySmall = brutal(poppins, 28.sp, FontWeight.ExtraBold, 30.sp, (-1).sp),
-        headlineLarge = brutal(poppins, 24.sp, FontWeight.Bold, 28.sp, (-0.5).sp),
-        headlineMedium = brutal(poppins, 20.sp, FontWeight.Bold, 24.sp),
-        headlineSmall = brutal(poppins, 18.sp, FontWeight.SemiBold, 22.sp),
-        titleLarge = brutal(poppins, 16.sp, FontWeight.SemiBold, 20.sp),
-        titleMedium = brutal(poppins, 14.sp, FontWeight.SemiBold, 18.sp),
-        titleSmall = brutal(poppins, 12.sp, FontWeight.Medium, 16.sp),
-        bodyLarge = brutal(inter, 16.sp, FontWeight.Normal, 24.sp),
-        bodyMedium = brutal(inter, 14.sp, FontWeight.Normal, 20.sp),
-        bodySmall = brutal(inter, 12.sp, FontWeight.Normal, 16.sp),
-        labelLarge = brutal(mono, 14.sp, FontWeight.Bold, 18.sp, 1.sp),
-        labelMedium = brutal(mono, 12.sp, FontWeight.Bold, 16.sp, 1.sp),
-        labelSmall = brutal(mono, 10.sp, FontWeight.Bold, 14.sp, 1.5.sp),
-        mono = brutal(mono, 13.sp, FontWeight.Normal, 18.sp)
+        displayLarge = style(poppins, 44.sp, FontWeight.Bold, 50.sp, (-1).sp),
+        displayMedium = style(poppins, 34.sp, FontWeight.Bold, 40.sp, (-0.5).sp),
+        displaySmall = style(poppins, 28.sp, FontWeight.Bold, 34.sp, (-0.25).sp),
+        headlineLarge = style(poppins, 24.sp, FontWeight.SemiBold, 30.sp),
+        headlineMedium = style(poppins, 20.sp, FontWeight.SemiBold, 26.sp),
+        headlineSmall = style(poppins, 18.sp, FontWeight.SemiBold, 24.sp),
+        titleLarge = style(poppins, 16.sp, FontWeight.SemiBold, 22.sp),
+        titleMedium = style(poppins, 14.sp, FontWeight.Medium, 20.sp),
+        titleSmall = style(poppins, 12.sp, FontWeight.Medium, 16.sp),
+        bodyLarge = style(inter, 16.sp, FontWeight.Normal, 24.sp),
+        bodyMedium = style(inter, 14.sp, FontWeight.Normal, 20.sp),
+        bodySmall = style(inter, 12.sp, FontWeight.Normal, 16.sp),
+        labelLarge = style(poppins, 14.sp, FontWeight.SemiBold, 18.sp, 0.3.sp),
+        labelMedium = style(poppins, 12.sp, FontWeight.SemiBold, 16.sp, 0.3.sp),
+        labelSmall = style(poppins, 10.sp, FontWeight.SemiBold, 14.sp, 0.5.sp),
+        mono = style(mono, 13.sp, FontWeight.Normal, 18.sp)
     )
 }
 
-// Fallback (system fonts) used only as the CompositionLocal default before the
-// themed typography is provided.
-private fun brutalFallback(
+private fun fallback(
     fontSize: TextUnit, fontWeight: FontWeight, lineHeight: TextUnit, letterSpacing: TextUnit? = null
-) = brutal(FontFamily.Default, fontSize, fontWeight, lineHeight, letterSpacing)
+) = style(FontFamily.Default, fontSize, fontWeight, lineHeight, letterSpacing)
 
 val BrutalTypographyDefaults = BrutalTypography(
-    displayLarge = brutalFallback(48.sp, FontWeight.Black, 52.sp, (-2).sp),
-    displayMedium = brutalFallback(36.sp, FontWeight.Black, 40.sp, (-1.5).sp),
-    displaySmall = brutalFallback(28.sp, FontWeight.Bold, 32.sp, (-1).sp),
-    headlineLarge = brutalFallback(24.sp, FontWeight.Bold, 28.sp, (-0.5).sp),
-    headlineMedium = brutalFallback(20.sp, FontWeight.Bold, 24.sp),
-    headlineSmall = brutalFallback(18.sp, FontWeight.SemiBold, 22.sp),
-    titleLarge = brutalFallback(16.sp, FontWeight.Bold, 20.sp),
-    titleMedium = brutalFallback(14.sp, FontWeight.SemiBold, 18.sp),
-    titleSmall = brutalFallback(12.sp, FontWeight.Medium, 16.sp),
-    bodyLarge = brutalFallback(16.sp, FontWeight.Normal, 24.sp),
-    bodyMedium = brutalFallback(14.sp, FontWeight.Normal, 20.sp),
-    bodySmall = brutalFallback(12.sp, FontWeight.Normal, 16.sp),
-    labelLarge = brutalFallback(14.sp, FontWeight.Bold, 18.sp, 1.sp),
-    labelMedium = brutalFallback(12.sp, FontWeight.Bold, 16.sp, 1.sp),
-    labelSmall = brutalFallback(10.sp, FontWeight.Bold, 14.sp, 1.5.sp),
-    mono = brutalFallback(13.sp, FontWeight.Normal, 18.sp)
+    displayLarge = fallback(44.sp, FontWeight.Bold, 50.sp, (-1).sp),
+    displayMedium = fallback(34.sp, FontWeight.Bold, 40.sp, (-0.5).sp),
+    displaySmall = fallback(28.sp, FontWeight.Bold, 34.sp),
+    headlineLarge = fallback(24.sp, FontWeight.SemiBold, 30.sp),
+    headlineMedium = fallback(20.sp, FontWeight.SemiBold, 26.sp),
+    headlineSmall = fallback(18.sp, FontWeight.SemiBold, 24.sp),
+    titleLarge = fallback(16.sp, FontWeight.SemiBold, 22.sp),
+    titleMedium = fallback(14.sp, FontWeight.Medium, 20.sp),
+    titleSmall = fallback(12.sp, FontWeight.Medium, 16.sp),
+    bodyLarge = fallback(16.sp, FontWeight.Normal, 24.sp),
+    bodyMedium = fallback(14.sp, FontWeight.Normal, 20.sp),
+    bodySmall = fallback(12.sp, FontWeight.Normal, 16.sp),
+    labelLarge = fallback(14.sp, FontWeight.SemiBold, 18.sp, 0.3.sp),
+    labelMedium = fallback(12.sp, FontWeight.SemiBold, 16.sp, 0.3.sp),
+    labelSmall = fallback(10.sp, FontWeight.SemiBold, 14.sp, 0.5.sp),
+    mono = fallback(13.sp, FontWeight.Normal, 18.sp)
 )
 
 val LocalBrutalTypography = staticCompositionLocalOf { BrutalTypographyDefaults }

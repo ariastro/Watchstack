@@ -2,45 +2,51 @@ package io.sws.myanimetracker.presentation.screen.search
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.sws.myanimetracker.presentation.PreviewContainer
 import io.sws.myanimetracker.presentation.PreviewData
+import io.sws.myanimetracker.presentation.components.BrutalChip
 import io.sws.myanimetracker.presentation.components.BrutalSearchBar
 import io.sws.myanimetracker.presentation.components.EmptyState
 import io.sws.myanimetracker.presentation.components.ErrorState
-import io.sws.myanimetracker.presentation.components.HeroCarousel
 import io.sws.myanimetracker.presentation.components.LoadingState
 import io.sws.myanimetracker.presentation.components.PosterCard
-import io.sws.myanimetracker.presentation.components.SectionHeader
-import io.sws.myanimetracker.presentation.screen.browse.BrowseCategory
 import io.sws.myanimetracker.presentation.theme.LocalBrutalColors
 import io.sws.myanimetracker.presentation.theme.LocalBrutalDimensions
 import io.sws.myanimetracker.presentation.theme.LocalBrutalTypography
-import io.sws.myanimetracker.presentation.theme.brutalBlock
 import myanimetracker.shared.generated.resources.Res
-import myanimetracker.shared.generated.resources.ic_chevron_right
+import myanimetracker.shared.generated.resources.ic_search
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -50,11 +56,7 @@ fun SearchScreen(
     viewModel: SearchViewModel = koinViewModel<SearchViewModel>()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    SearchContent(
-        uiState = uiState,
-        onIntent = viewModel::onIntent,
-        modifier = modifier
-    )
+    SearchContent(uiState = uiState, onIntent = viewModel::onIntent, modifier = modifier)
 }
 
 @Composable
@@ -66,142 +68,162 @@ private fun SearchContent(
     val colors = LocalBrutalColors.current
     val dims = LocalBrutalDimensions.current
     val typo = LocalBrutalTypography.current
+    val gridState = rememberLazyGridState()
+    val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
-    when {
-        uiState.isLoading -> Box(
-            modifier = modifier
-                .fillMaxSize()
-                .background(color = colors.background)
-                .padding(horizontal = dims.paddingScreen)
-        ) {
-            LoadingState()
-        }
-        uiState.error != null -> Box(
-            modifier = modifier
-                .fillMaxSize()
-                .background(color = colors.background)
-                .padding(horizontal = dims.paddingScreen)
-        ) {
-            ErrorState(
-                message = uiState.error ?: "",
-                onRetry = { onIntent(SearchIntent.Search) }
-            )
-        }
-        uiState.hasSearched && uiState.results.isEmpty() -> Box(
-            modifier = modifier
-                .fillMaxSize()
-                .background(color = colors.background)
-                .padding(horizontal = dims.paddingScreen)
-        ) {
-            EmptyState(message = "No anime found")
-        }
-        else -> {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 130.dp),
-                modifier = modifier
-                    .fillMaxSize()
-                    .background(color = colors.background),
-                horizontalArrangement = Arrangement.spacedBy(dims.gridSpacing),
-                verticalArrangement = Arrangement.spacedBy(dims.gridSpacing),
-                contentPadding = PaddingValues(
-                    top = 0.dp,
-                    start = dims.paddingScreen,
-                    end = dims.paddingScreen,
-                    bottom = dims.spacingXxl
-                )
-            ) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Column {
-                        Spacer(modifier = Modifier.height(dims.spacingLg))
-                        Text(
-                            text = "Discover",
-                            style = typo.displaySmall,
-                            color = colors.textPrimary,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(dims.spacingMd))
-                        BrutalSearchBar(
-                            query = uiState.query,
-                            onQueryChange = { onIntent(SearchIntent.QueryChanged(it)) },
-                            onSearch = { onIntent(SearchIntent.Search) }
-                        )
-                        Spacer(modifier = Modifier.height(dims.spacingLg))
-                    }
-                }
-
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Column {
-                        Text(
-                            text = "Browse",
-                            style = typo.titleLarge,
-                            color = colors.textPrimary,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(dims.spacingMd))
-                        BrowseCategory.values().forEach { category ->
-                            BrowseRow(
-                                category = category,
-                                onClick = { onIntent(SearchIntent.BrowseClicked(category)) }
-                            )
-                            Spacer(modifier = Modifier.height(dims.spacingSm))
-                        }
-                        Spacer(modifier = Modifier.height(dims.spacingMd))
-                    }
-                }
-
-                if (!uiState.hasSearched && uiState.results.isNotEmpty()) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        HeroCarousel(
-                            items = uiState.results.take(5),
-                            onItemClick = { onIntent(SearchIntent.AnimeClicked(it, uiState.results.find { a -> a.malId == it })) },
-                            sharedKey = { it.malId.toString() }
-                        )
-                        Spacer(modifier = Modifier.height(dims.spacingLg))
-                    }
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        SectionHeader(
-                            title = "Top Rated",
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(dims.spacingMd))
-                    }
-                }
-
-                items(
-                    items = uiState.results,
-                    key = { anime -> anime.malId }
-                ) { anime ->
-                    PosterCard(
-                        anime = anime,
-                        onClick = { onIntent(SearchIntent.AnimeClicked(anime.malId, anime)) },
-                        sharedKey = anime.malId.toString()
-                    )
-                }
+    LaunchedEffect(gridState, uiState.hasNext, uiState.isLoadingMore) {
+        snapshotFlow {
+            val info = gridState.layoutInfo
+            val last = info.visibleItemsInfo.lastOrNull()?.index ?: 0
+            last to info.totalItemsCount
+        }.collect { (last, total) ->
+            if (total > 0 && last >= total - 4 && uiState.hasNext && !uiState.isLoadingMore) {
+                onIntent(SearchIntent.LoadMore)
             }
         }
     }
-}
 
-@Composable
-private fun BrowseRow(category: BrowseCategory, onClick: () -> Unit) {
-    val colors = LocalBrutalColors.current
-    val dims = LocalBrutalDimensions.current
-    val typo = LocalBrutalTypography.current
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .brutalBlock(cornerRadius = dims.radiusMd, shadowElevation = dims.radiusXs)
-            .clickable(onClick = onClick)
-            .padding(dims.spacingLg),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(text = category.label, style = typo.titleMedium, color = colors.textPrimary)
-        Icon(
-            painter = painterResource(Res.drawable.ic_chevron_right),
-            contentDescription = null,
-            tint = colors.primary
+    Box(modifier = modifier.fillMaxSize().background(color = colors.background)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(statusTop + 220.dp)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            colors.secondary.copy(alpha = 0.22f),
+                            colors.secondary.copy(alpha = 0.12f),
+                            colors.background
+                        )
+                    )
+                )
         )
+
+        Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.padding(horizontal = dims.paddingScreen)) {
+                Spacer(modifier = Modifier.height(statusTop + dims.spacingLg))
+                Text(text = "Find titles", style = typo.labelMedium, color = colors.primary)
+                Spacer(modifier = Modifier.height(dims.spacingXs))
+                Text(text = "Search", style = typo.displaySmall, color = colors.textPrimary)
+                Spacer(modifier = Modifier.height(dims.spacingLg))
+                BrutalSearchBar(
+                    query = uiState.query,
+                    onQueryChange = { onIntent(SearchIntent.QueryChanged(it)) },
+                    onSearch = { onIntent(SearchIntent.Search) },
+                    onClear = { onIntent(SearchIntent.Clear) },
+                    placeholder = "Type a title…"
+                )
+                if (uiState.recentQueries.isNotEmpty() && !uiState.hasSearched) {
+                    Spacer(modifier = Modifier.height(dims.spacingMd))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "Recent", style = typo.titleMedium, color = colors.textPrimary)
+                        Text(
+                            text = "Clear",
+                            style = typo.labelMedium,
+                            color = colors.primary,
+                            modifier = Modifier.clickable { onIntent(SearchIntent.ClearHistory) }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(dims.spacingSm))
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(dims.spacingSm)
+                    ) {
+                        uiState.recentQueries.forEach { q ->
+                            Box(modifier = Modifier.clickable { onIntent(SearchIntent.RecentClicked(q)) }) {
+                                BrutalChip(
+                                    text = q,
+                                    color = colors.primaryContainer,
+                                    contentColor = colors.onPrimaryContainer
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(dims.spacingLg))
+            }
+
+            when {
+                uiState.isLoading -> Box(
+                    modifier = Modifier.fillMaxSize().padding(horizontal = dims.paddingScreen),
+                    contentAlignment = Alignment.TopCenter
+                ) { LoadingState() }
+
+                uiState.error != null -> {
+                    val errorMessage = uiState.error
+                    Box(
+                        modifier = Modifier.fillMaxSize().padding(horizontal = dims.paddingScreen),
+                        contentAlignment = Alignment.TopCenter
+                    ) {
+                        ErrorState(message = errorMessage, onRetry = { onIntent(SearchIntent.Search) })
+                    }
+                }
+
+                !uiState.hasSearched -> Box(
+                    modifier = Modifier.fillMaxSize().padding(horizontal = dims.paddingScreen),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    EmptyState(
+                        message = "Search for anime by title.\nResults appear as you type.",
+                        icon = painterResource(Res.drawable.ic_search)
+                    )
+                }
+
+                uiState.results.isEmpty() -> Box(
+                    modifier = Modifier.fillMaxSize().padding(horizontal = dims.paddingScreen),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    EmptyState(message = "No results for \"${uiState.query}\"")
+                }
+
+                else -> LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 130.dp),
+                    state = gridState,
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(dims.gridSpacing),
+                    verticalArrangement = Arrangement.spacedBy(dims.gridSpacing),
+                    contentPadding = PaddingValues(
+                        start = dims.paddingScreen,
+                        end = dims.paddingScreen,
+                        bottom = dims.navBarHeight + dims.spacingXl
+                    )
+                ) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Text(
+                            text = "${uiState.results.size} results",
+                            style = typo.titleMedium,
+                            color = colors.textSecondary,
+                            modifier = Modifier.padding(bottom = dims.spacingSm)
+                        )
+                    }
+                    items(
+                        items = uiState.results.distinctBy { it.malId },
+                        key = { it.malId },
+                        contentType = { "anime-row" }
+                    ) { anime ->
+                        PosterCard(
+                            anime = anime,
+                            onClick = { onIntent(SearchIntent.AnimeClicked(anime.malId, anime)) },
+                            sharedKey = anime.malId.toString()
+                        )
+                    }
+                    if (uiState.isLoadingMore) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(color = colors.primary)
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -210,18 +232,12 @@ private fun BrowseRow(category: BrowseCategory, onClick: () -> Unit) {
 private fun SearchContentPreview() {
     PreviewContainer {
         SearchContent(
-            uiState = SearchUiState(results = PreviewData.animeList),
-            onIntent = {}
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun SearchContentLoadingPreview() {
-    PreviewContainer {
-        SearchContent(
-            uiState = SearchUiState(isLoading = true),
+            uiState = SearchUiState(
+                results = PreviewData.animeList,
+                hasSearched = true,
+                query = "naruto",
+                recentQueries = listOf("naruto", "one piece")
+            ),
             onIntent = {}
         )
     }

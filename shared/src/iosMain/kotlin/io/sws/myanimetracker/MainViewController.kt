@@ -2,6 +2,7 @@ package io.sws.myanimetracker
 
 import androidx.compose.ui.window.ComposeUIViewController
 import io.sws.myanimetracker.data.local.DatabaseFactory
+import io.sws.myanimetracker.data.local.ThemePreferences
 import io.sws.myanimetracker.db.AnimeDatabase
 import io.sws.myanimetracker.di.initKoin
 import org.koin.dsl.module
@@ -14,6 +15,7 @@ fun MainViewController() = ComposeUIViewController {
         initKoin(
             module {
                 single<AnimeDatabase> { DatabaseFactory.create() }
+                single { ThemePreferences() }
             }
         )
     }

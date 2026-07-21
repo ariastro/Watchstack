@@ -14,13 +14,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.sws.myanimetracker.presentation.PreviewContainer
 import io.sws.myanimetracker.presentation.theme.LocalBrutalColors
 import io.sws.myanimetracker.presentation.theme.LocalBrutalDimensions
 import io.sws.myanimetracker.presentation.theme.LocalBrutalTypography
-import io.sws.myanimetracker.presentation.theme.brutalBlock
-import androidx.compose.ui.tooling.preview.Preview
+import io.sws.myanimetracker.presentation.theme.glassSurface
 import myanimetracker.shared.generated.resources.Res
 import myanimetracker.shared.generated.resources.ic_close
 import myanimetracker.shared.generated.resources.ic_search_off
@@ -34,7 +35,7 @@ fun LoadingState(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .brutalBlock(fill = colors.surface, cornerRadius = dims.radiusMd)
+            .glassSurface(cornerRadius = dims.radiusLg)
             .padding(dims.spacingXxl),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -42,10 +43,10 @@ fun LoadingState(modifier: Modifier = Modifier) {
         CircularProgressIndicator(
             modifier = Modifier.size(40.dp),
             color = colors.primary,
-            strokeWidth = 4.dp
+            strokeWidth = 3.dp
         )
         Spacer(modifier = Modifier.height(dims.spacingLg))
-        Text(text = "LOADING...", style = typo.labelMedium, color = colors.textSecondary)
+        Text(text = "Loading…", style = typo.labelMedium, color = colors.textSecondary)
     }
 }
 
@@ -61,7 +62,7 @@ fun ErrorState(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .brutalBlock(fill = colors.surface, cornerRadius = dims.radiusMd)
+            .glassSurface(cornerRadius = dims.radiusLg)
             .padding(dims.spacingXxl),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -72,13 +73,20 @@ fun ErrorState(
             tint = colors.error
         )
         Spacer(modifier = Modifier.height(dims.spacingMd))
-        Text(text = message, style = typo.bodyMedium, color = colors.textSecondary)
+        Text(
+            text = message,
+            textAlign = TextAlign.Center,
+            style = typo.bodyMedium,
+            color = colors.textSecondary
+        )
         onRetry?.let {
             Spacer(modifier = Modifier.height(dims.spacingLg))
             BrutalButton(
-                text = "RETRY",
+                text = "Retry",
                 onClick = it,
-                backgroundColor = colors.error
+                backgroundColor = colors.error,
+                contentColor = colors.onError,
+                gradient = false
             )
         }
     }
@@ -88,7 +96,9 @@ fun ErrorState(
 fun EmptyState(
     message: String,
     modifier: Modifier = Modifier,
-    icon: Painter = painterResource(Res.drawable.ic_search_off)
+    icon: Painter = painterResource(Res.drawable.ic_search_off),
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null
 ) {
     val colors = LocalBrutalColors.current
     val dims = LocalBrutalDimensions.current
@@ -96,7 +106,7 @@ fun EmptyState(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .brutalBlock(fill = colors.surface, cornerRadius = dims.radiusMd)
+            .glassSurface(cornerRadius = dims.radiusLg)
             .padding(dims.spacingXxl),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -107,7 +117,16 @@ fun EmptyState(
             tint = colors.textSecondary
         )
         Spacer(modifier = Modifier.height(dims.spacingMd))
-        Text(text = message, style = typo.bodyMedium, color = colors.textSecondary)
+        Text(
+            text = message,
+            textAlign = TextAlign.Center,
+            style = typo.bodyMedium,
+            color = colors.textSecondary
+        )
+        if (actionLabel != null && onAction != null) {
+            Spacer(modifier = Modifier.height(dims.spacingLg))
+            BrutalButton(text = actionLabel, onClick = onAction)
+        }
     }
 }
 

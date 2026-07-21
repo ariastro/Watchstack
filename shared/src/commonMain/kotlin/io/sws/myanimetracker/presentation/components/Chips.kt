@@ -21,18 +21,15 @@ fun BrutalChip(
     contentColor: Color = LocalBrutalColors.current.textPrimary
 ) {
     val dims = LocalBrutalDimensions.current
+    val colors = LocalBrutalColors.current
     Text(
-        text = text.uppercase(),
+        text = text,
         style = LocalBrutalTypography.current.labelSmall,
         color = contentColor,
         modifier = modifier
             .background(color = color, shape = RoundedCornerShape(dims.radiusPill))
-            .border(
-                width = dims.borderThin,
-                color = LocalBrutalColors.current.border,
-                shape = RoundedCornerShape(dims.radiusPill)
-            )
-            .padding(horizontal = 10.dp, vertical = 4.dp)
+            .border(width = dims.borderThin, color = colors.border, shape = RoundedCornerShape(dims.radiusPill))
+            .padding(horizontal = 12.dp, vertical = 6.dp)
     )
 }
 
@@ -45,7 +42,7 @@ fun BrutalBadge(
 ) {
     val dims = LocalBrutalDimensions.current
     Text(
-        text = text.uppercase(),
+        text = text,
         style = LocalBrutalTypography.current.labelSmall,
         color = contentColor,
         modifier = modifier

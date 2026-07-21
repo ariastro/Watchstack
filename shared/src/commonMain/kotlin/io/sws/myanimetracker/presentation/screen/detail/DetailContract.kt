@@ -12,7 +12,9 @@ data class DetailUiState(
     val characters: List<Character> = emptyList(),
     val recommendations: List<RecommendedAnime> = emptyList(),
     val isLoading: Boolean = false,
+    val isSaving: Boolean = false,
     val error: String? = null,
+    val actionError: String? = null,
     val showTrackDialog: Boolean = false,
     val showEditDialog: Boolean = false,
     val trackDialogStatus: WatchStatus = WatchStatus.WATCHLIST,
@@ -25,15 +27,17 @@ data class DetailUiState(
 
 sealed interface DetailIntent {
     data class LoadAnime(val malId: Int, val seed: Anime? = null) : DetailIntent
-    data class AddToWatchlist(val whereToWatch: String) : DetailIntent
-    data class StartWatching(val whereToWatch: String) : DetailIntent
-    data class MarkWatched(val whereToWatch: String) : DetailIntent
-    data class SaveEdit(val episodes: Int?, val rating: Int?, val whereToWatch: String, val notes: String) : DetailIntent
+    data class SaveEdit(
+        val episodes: Int?,
+        val rating: Int?,
+        val whereToWatch: String,
+        val notes: String
+    ) : DetailIntent
     data object RemoveFromTracking : DetailIntent
     data object ShowTrackDialog : DetailIntent
     data object ShowEditDialog : DetailIntent
     data object DismissDialog : DetailIntent
-    data object ClearError : DetailIntent
+    data object DismissActionError : DetailIntent
     data object GoBack : DetailIntent
     data class TrackDialogStatusChanged(val status: WatchStatus) : DetailIntent
     data class TrackDialogWhereChanged(val where: String) : DetailIntent
@@ -43,4 +47,6 @@ sealed interface DetailIntent {
     data class EditNotesChanged(val notes: String) : DetailIntent
     data object ConfirmTrack : DetailIntent
     data class OpenRecommendation(val malId: Int, val anime: Anime? = null) : DetailIntent
+    data object OpenTrailer : DetailIntent
+    data object Share : DetailIntent
 }

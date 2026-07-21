@@ -1,1 +1,0 @@
-io.sws.myanimetracker.shared

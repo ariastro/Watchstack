@@ -11,7 +11,6 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
-import io.ktor.http.isSuccess
 import kotlinx.coroutines.delay
 
 class JikanApi(private val client: HttpClient) {
@@ -21,7 +20,10 @@ class JikanApi(private val client: HttpClient) {
         private const val MAX_RETRIES = 3
     }
 
-    private suspend inline fun <reified T> rateLimitedGet(url: String, block: io.ktor.client.request.HttpRequestBuilder.() -> Unit = {}): T {
+    private suspend inline fun <reified T> rateLimitedGet(
+        url: String,
+        block: io.ktor.client.request.HttpRequestBuilder.() -> Unit = {}
+    ): T {
         repeat(MAX_RETRIES) { attempt ->
             try {
                 delay(RATE_LIMIT_DELAY_MS)
@@ -53,8 +55,11 @@ class JikanApi(private val client: HttpClient) {
             parameter("limit", 25)
         }
 
-    suspend fun getSeasonalAnime(year: Int, season: String): SeasonalAnimeResponse =
-        rateLimitedGet("$BASE_URL/seasons/$year/$season")
+    suspend fun getSeasonalAnime(year: Int, season: String, page: Int = 1): SeasonalAnimeResponse =
+        rateLimitedGet("$BASE_URL/seasons/$year/$season") {
+            parameter("page", page)
+            parameter("limit", 25)
+        }
 
     suspend fun getAiringNow(page: Int = 1): SeasonalAnimeResponse =
         rateLimitedGet("$BASE_URL/seasons/now") {

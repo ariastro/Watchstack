@@ -8,39 +8,44 @@ data class BrutalColors(
     val surface: Color, val onSurface: Color, val surfaceVariant: Color, val onSurfaceVariant: Color,
     val primary: Color, val onPrimary: Color, val primaryContainer: Color, val onPrimaryContainer: Color,
     val secondary: Color, val onSecondary: Color,
+    val accent: Color, val onAccent: Color,
     val error: Color, val onError: Color,
     val textPrimary: Color, val textSecondary: Color, val textInverse: Color,
     val border: Color, val divider: Color, val overlay: Color, val shadow: Color,
+    val glass: Color, val glassBorder: Color,
     val watchlistColor: Color, val watchingColor: Color, val watchedColor: Color
 )
 
-// Modern mobile palette — dark-first, vibrant purple primary, soft surfaces.
 val BrutalPalette = BrutalColors(
-    background = Color(0xFFF6F7FB), onBackground = Color(0xFF1A1A2E),
-    surface = Color(0xFFFFFFFF), onSurface = Color(0xFF1A1A2E),
-    surfaceVariant = Color(0xFFEEF0F6), onSurfaceVariant = Color(0xFF6B6B80),
-    primary = Color(0xFF6C5CE7), onPrimary = Color(0xFFFFFFFF),
-    primaryContainer = Color(0xFFECE9FF), onPrimaryContainer = Color(0xFF4A3FBF),
-    secondary = Color(0xFF00B8A9), onSecondary = Color(0xFFFFFFFF),
-    error = Color(0xFFE5484D), onError = Color(0xFFFFFFFF),
-    textPrimary = Color(0xFF1A1A2E), textSecondary = Color(0xFF6B6B80), textInverse = Color(0xFFFFFFFF),
-    border = Color(0xFFE2E4EE), divider = Color(0xFFE8EAF2), overlay = Color(0x80000000),
-    shadow = Color(0x14000000),
-    watchlistColor = Color(0xFFFF6B9D), watchingColor = Color(0xFF4D8DFF), watchedColor = Color(0xFF2ECC71)
+    background = Color(0xFFF1F5F9), onBackground = Color(0xFF0F172A),
+    surface = Color(0xFFFFFFFF), onSurface = Color(0xFF0F172A),
+    surfaceVariant = Color(0xFFE2E8F0), onSurfaceVariant = Color(0xFF64748B),
+    primary = Color(0xFF4338CA), onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFE0E7FF), onPrimaryContainer = Color(0xFF312E81),
+    secondary = Color(0xFF6366F1), onSecondary = Color(0xFFFFFFFF),
+    accent = Color(0xFF7C3AED), onAccent = Color(0xFFFFFFFF),
+    error = Color(0xFFDC2626), onError = Color(0xFFFFFFFF),
+    textPrimary = Color(0xFF0F172A), textSecondary = Color(0xFF64748B), textInverse = Color(0xFFFFFFFF),
+    border = Color(0x1A0F172A), divider = Color(0x140F172A), overlay = Color(0x99000000),
+    shadow = Color(0x1A0F172A),
+    glass = Color(0xE6FFFFFF), glassBorder = Color(0x1A0F172A),
+    watchlistColor = Color(0xFFEC4899), watchingColor = Color(0xFF3B82F6), watchedColor = Color(0xFF10B981)
 )
 
 val BrutalDarkPalette = BrutalColors(
-    background = Color(0xFF0E0E14), onBackground = Color(0xFFECECF4),
-    surface = Color(0xFF1A1A24), onSurface = Color(0xFFECECF4),
-    surfaceVariant = Color(0xFF24242F), onSurfaceVariant = Color(0xFF9A9AB0),
-    primary = Color(0xFF8B7CF6), onPrimary = Color(0xFF0E0E14),
-    primaryContainer = Color(0xFF2A2650), onPrimaryContainer = Color(0xFFC9C0FF),
-    secondary = Color(0xFF2DD4BF), onSecondary = Color(0xFF0E0E14),
-    error = Color(0xFFF0626A), onError = Color(0xFF0E0E14),
-    textPrimary = Color(0xFFECECF4), textSecondary = Color(0xFF9A9AB0), textInverse = Color(0xFF0E0E14),
-    border = Color(0xFF2C2C3A), divider = Color(0xFF262633), overlay = Color(0x80000000),
-    shadow = Color(0x40000000),
-    watchlistColor = Color(0xFFFF7FAB), watchingColor = Color(0xFF6BA8FF), watchedColor = Color(0xFF4FE08C)
+    background = Color(0xFF0F172A), onBackground = Color(0xFFF8FAFC),
+    surface = Color(0xFF131936), onSurface = Color(0xFFF8FAFC),
+    surfaceVariant = Color(0xFF1E293B), onSurfaceVariant = Color(0xFF94A3B8),
+    primary = Color(0xFF818CF8), onPrimary = Color(0xFF0F172A),
+    primaryContainer = Color(0xFF312E81), onPrimaryContainer = Color(0xFFC7D2FE),
+    secondary = Color(0xFF6366F1), onSecondary = Color(0xFFFFFFFF),
+    accent = Color(0xFFA78BFA), onAccent = Color(0xFF0F172A),
+    error = Color(0xFFF87171), onError = Color(0xFF0F172A),
+    textPrimary = Color(0xFFF8FAFC), textSecondary = Color(0xFF94A3B8), textInverse = Color(0xFF0F172A),
+    border = Color(0x14FFFFFF), divider = Color(0x0FFFFFFF), overlay = Color(0xB3000000),
+    shadow = Color(0x66000000),
+    glass = Color(0xCC131936), glassBorder = Color(0x1AFFFFFF),
+    watchlistColor = Color(0xFFF472B6), watchingColor = Color(0xFF60A5FA), watchedColor = Color(0xFF34D399)
 )
 
-val LocalBrutalColors = staticCompositionLocalOf { BrutalPalette }
+val LocalBrutalColors = staticCompositionLocalOf { BrutalDarkPalette }

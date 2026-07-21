@@ -2,9 +2,11 @@ package io.sws.myanimetracker.data.remote.mapper
 
 import io.sws.myanimetracker.data.remote.dto.AnimeDto
 import io.sws.myanimetracker.data.remote.dto.CharacterNodeDto
+import io.sws.myanimetracker.data.remote.dto.PaginationDto
 import io.sws.myanimetracker.data.remote.dto.RecommendationNodeDto
 import io.sws.myanimetracker.domain.model.Anime
 import io.sws.myanimetracker.domain.model.Character
+import io.sws.myanimetracker.domain.model.PagedAnime
 import io.sws.myanimetracker.domain.model.RecommendedAnime
 
 fun AnimeDto.toDomain(): Anime = Anime(
@@ -19,11 +21,14 @@ fun AnimeDto.toDomain(): Anime = Anime(
     airing = airing,
     rated = rating,
     genres = genres.mapNotNull { it.name },
+    type = type,
     source = source,
     duration = duration,
     rating = rating,
     year = year,
-    season = season
+    season = season,
+    trailerUrl = trailer?.url ?: trailer?.embed_url,
+    trailerYoutubeId = trailer?.youtube_id
 )
 
 fun RecommendationNodeDto.toDomain(): RecommendedAnime = RecommendedAnime(
@@ -42,3 +47,13 @@ fun CharacterNodeDto.toDomain(): Character {
         voiceActorImageUrl = va?.person?.images?.jpg?.image_url ?: va?.person?.images?.jpg?.large_image_url
     )
 }
+
+fun PaginationDto?.toHasNext(defaultPage: Int = 1): Boolean =
+    this?.has_next_page ?: false
+
+fun toPaged(items: List<Anime>, page: Int, pagination: PaginationDto?): PagedAnime =
+    PagedAnime(
+        items = items,
+        page = pagination?.current_page?.takeIf { it > 0 } ?: page,
+        hasNext = pagination.toHasNext()
+    )

@@ -20,7 +20,9 @@ data class Anime(
     val duration: String? = null,
     val rating: String? = null,
     val year: Int? = null,
-    val season: String? = null
+    val season: String? = null,
+    val trailerUrl: String? = null,
+    val trailerYoutubeId: String? = null
 )
 
 @Serializable
@@ -56,4 +58,20 @@ data class Character(
 data class RecommendedAnime(
     val anime: Anime,
     val votes: Int = 0
+)
+
+data class PagedAnime(
+    val items: List<Anime>,
+    val page: Int,
+    val hasNext: Boolean
+)
+
+data class LibraryStats(
+    val total: Int,
+    val watchlist: Int,
+    val watching: Int,
+    val watched: Int,
+    val episodesWatched: Int,
+    val averageRating: Double?,
+    val topGenres: List<Pair<String, Int>>
 )

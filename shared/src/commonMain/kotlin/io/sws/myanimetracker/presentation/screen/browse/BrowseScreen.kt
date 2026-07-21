@@ -2,47 +2,46 @@ package io.sws.myanimetracker.presentation.screen.browse
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.sws.myanimetracker.core.currentSeason
 import io.sws.myanimetracker.core.seasonLabel
 import io.sws.myanimetracker.core.seasonWindow
-import io.sws.myanimetracker.domain.model.Anime
-import myanimetracker.shared.generated.resources.Res
-import myanimetracker.shared.generated.resources.ic_arrow_back
-import myanimetracker.shared.generated.resources.ic_search_off
-import org.jetbrains.compose.resources.painterResource
 import io.sws.myanimetracker.presentation.PreviewContainer
 import io.sws.myanimetracker.presentation.PreviewData
+import io.sws.myanimetracker.presentation.components.BrutalChip
 import io.sws.myanimetracker.presentation.components.EmptyState
 import io.sws.myanimetracker.presentation.components.ErrorState
 import io.sws.myanimetracker.presentation.components.LoadingState
@@ -50,7 +49,11 @@ import io.sws.myanimetracker.presentation.components.PosterCard
 import io.sws.myanimetracker.presentation.theme.LocalBrutalColors
 import io.sws.myanimetracker.presentation.theme.LocalBrutalDimensions
 import io.sws.myanimetracker.presentation.theme.LocalBrutalTypography
-import io.sws.myanimetracker.presentation.theme.brutalBlock
+import io.sws.myanimetracker.presentation.theme.glassSurface
+import myanimetracker.shared.generated.resources.Res
+import myanimetracker.shared.generated.resources.ic_arrow_back
+import myanimetracker.shared.generated.resources.ic_search_off
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -58,43 +61,52 @@ import org.koin.core.parameter.parametersOf
 fun BrowseScreen(
     category: BrowseCategory,
     modifier: Modifier = Modifier,
-    onBack: () -> Unit = {},
-    viewModel: BrowseViewModel = koinViewModel<BrowseViewModel>(parameters = { parametersOf(category) })
+    viewModel: BrowseViewModel = koinViewModel<BrowseViewModel>(
+        key = category.name,
+        parameters = { parametersOf(category) }
+    )
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    BrowseContent(
-        uiState = uiState,
-        onIntent = viewModel::onIntent,
-        onBack = onBack,
-        modifier = modifier
-    )
+    BrowseContent(uiState = uiState, onIntent = viewModel::onIntent, modifier = modifier)
 }
 
 @Composable
 private fun BrowseContent(
     uiState: BrowseUiState,
     onIntent: (BrowseIntent) -> Unit,
-    onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = LocalBrutalColors.current
     val dims = LocalBrutalDimensions.current
     val typo = LocalBrutalTypography.current
+    val gridState = rememberLazyGridState()
+    val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+
+    LaunchedEffect(gridState, uiState.hasNext, uiState.isLoadingMore) {
+        snapshotFlow {
+            val info = gridState.layoutInfo
+            val last = info.visibleItemsInfo.lastOrNull()?.index ?: 0
+            last to info.totalItemsCount
+        }.collect { (last, total) ->
+            if (total > 0 && last >= total - 4 && uiState.hasNext && !uiState.isLoadingMore) {
+                onIntent(BrowseIntent.LoadMore)
+            }
+        }
+    }
 
     Column(modifier = modifier.fillMaxSize().background(color = colors.background)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = colors.background)
+                .padding(top = statusTop)
                 .padding(horizontal = dims.paddingScreen, vertical = dims.spacingMd),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(shape = CircleShape)
-                    .background(color = colors.surface)
-                    .clickable(onClick = onBack),
+                    .size(44.dp)
+                    .glassSurface(cornerRadius = dims.radiusPill)
+                    .clickable { onIntent(BrowseIntent.GoBack) },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -104,14 +116,16 @@ private fun BrowseContent(
                 )
             }
             Spacer(modifier = Modifier.width(dims.spacingMd))
-            Text(
-                text = uiState.category.label,
-                style = typo.titleLarge,
-                color = colors.textPrimary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f)
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = "Browse", style = typo.labelMedium, color = colors.primary)
+                Text(
+                    text = uiState.category.label,
+                    style = typo.headlineSmall,
+                    color = colors.textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
 
         if (uiState.category == BrowseCategory.SEASON) {
@@ -120,16 +134,17 @@ private fun BrowseContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = dims.paddingScreen, vertical = dims.spacingMd),
+                    .padding(horizontal = dims.paddingScreen, vertical = dims.spacingSm),
                 horizontalArrangement = Arrangement.spacedBy(dims.spacingSm)
             ) {
                 options.forEach { season ->
                     val selected = season == uiState.selectedSeason
                     Box(
                         modifier = Modifier
-                            .brutalBlock(
-                                fill = if (selected) colors.primary else colors.surface,
-                                cornerRadius = dims.radiusMd
+                            .glassSurface(
+                                cornerRadius = dims.radiusPill,
+                                fill = if (selected) colors.primary else colors.glass,
+                                borderColor = if (selected) colors.primary else colors.glassBorder
                             )
                             .clickable { onIntent(BrowseIntent.SeasonSelected(season)) }
                             .padding(horizontal = dims.spacingLg, vertical = dims.spacingSm)
@@ -144,21 +159,100 @@ private fun BrowseContent(
             }
         }
 
+        // Filters
+        Column(modifier = Modifier.padding(horizontal = dims.paddingScreen)) {
+            Text(text = "Sort", style = typo.labelMedium, color = colors.textSecondary)
+            Spacer(modifier = Modifier.size(6.dp))
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(dims.spacingSm)
+            ) {
+                BrowseSort.entries.forEach { sort ->
+                    val selected = uiState.sort == sort
+                    Box(modifier = Modifier.clickable { onIntent(BrowseIntent.SortSelected(sort)) }) {
+                        BrutalChip(
+                            text = sort.label,
+                            color = if (selected) colors.primaryContainer else colors.surfaceVariant,
+                            contentColor = if (selected) colors.onPrimaryContainer else colors.textPrimary
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.size(10.dp))
+            Text(text = "Type", style = typo.labelMedium, color = colors.textSecondary)
+            Spacer(modifier = Modifier.size(6.dp))
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(dims.spacingSm)
+            ) {
+                Box(modifier = Modifier.clickable { onIntent(BrowseIntent.TypeFilterSelected(null)) }) {
+                    BrutalChip(
+                        text = "All",
+                        color = if (uiState.typeFilter == null) colors.primaryContainer else colors.surfaceVariant,
+                        contentColor = if (uiState.typeFilter == null) colors.onPrimaryContainer else colors.textPrimary
+                    )
+                }
+                uiState.availableTypes.forEach { type ->
+                    val selected = uiState.typeFilter == type
+                    Box(modifier = Modifier.clickable { onIntent(BrowseIntent.TypeFilterSelected(type)) }) {
+                        BrutalChip(
+                            text = type,
+                            color = if (selected) colors.primaryContainer else colors.surfaceVariant,
+                            contentColor = if (selected) colors.onPrimaryContainer else colors.textPrimary
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.size(10.dp))
+            Text(text = "Min score", style = typo.labelMedium, color = colors.textSecondary)
+            Spacer(modifier = Modifier.size(6.dp))
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(dims.spacingSm)
+            ) {
+                listOf(null to "Any", 7.0 to "7+", 8.0 to "8+", 9.0 to "9+").forEach { (score, label) ->
+                    val selected = uiState.minScore == score
+                    Box(modifier = Modifier.clickable { onIntent(BrowseIntent.MinScoreSelected(score)) }) {
+                        BrutalChip(
+                            text = label,
+                            color = if (selected) colors.primaryContainer else colors.surfaceVariant,
+                            contentColor = if (selected) colors.onPrimaryContainer else colors.textPrimary
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.size(dims.spacingMd))
+        }
+
         when {
             uiState.isLoading -> Box(
                 modifier = Modifier.fillMaxSize().padding(dims.spacingXxl),
                 contentAlignment = Alignment.Center
             ) { LoadingState() }
-            uiState.error != null -> Box(
+
+            uiState.error != null -> {
+                val errorMessage = uiState.error
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(horizontal = dims.paddingScreen),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ErrorState(message = errorMessage, onRetry = { onIntent(BrowseIntent.Load) })
+                }
+            }
+
+            uiState.filteredAnime.isEmpty() -> Box(
                 modifier = Modifier.fillMaxSize().padding(horizontal = dims.paddingScreen),
                 contentAlignment = Alignment.Center
-            ) { ErrorState(message = uiState.error ?: "", onRetry = { onIntent(BrowseIntent.Load) }) }
-            uiState.anime.isEmpty() -> Box(
-                modifier = Modifier.fillMaxSize().padding(horizontal = dims.paddingScreen),
-                contentAlignment = Alignment.Center
-            ) { EmptyState(message = "Nothing here.", icon = painterResource(Res.drawable.ic_search_off)) }
+            ) {
+                EmptyState(
+                    message = "Nothing matches filters.",
+                    icon = painterResource(Res.drawable.ic_search_off)
+                )
+            }
+
             else -> LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 130.dp),
+                state = gridState,
                 modifier = Modifier.fillMaxSize(),
                 horizontalArrangement = Arrangement.spacedBy(dims.gridSpacing),
                 verticalArrangement = Arrangement.spacedBy(dims.gridSpacing),
@@ -169,15 +263,25 @@ private fun BrowseContent(
                 )
             ) {
                 items(
-                    items = uiState.anime,
-                    key = { it.malId }
+                    items = uiState.filteredAnime.distinctBy { it.malId },
+                    key = { it.malId },
+                    contentType = { "poster" }
                 ) { anime ->
                     PosterCard(
                         anime = anime,
                         onClick = { onIntent(BrowseIntent.AnimeClicked(anime.malId, anime)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        sharedKey = anime.malId.toString()
+                        modifier = Modifier.fillMaxWidth()
                     )
+                }
+                if (uiState.isLoadingMore) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = colors.primary)
+                        }
+                    }
                 }
             }
         }
@@ -189,9 +293,13 @@ private fun BrowseContent(
 private fun BrowseContentPreview() {
     PreviewContainer {
         BrowseContent(
-            uiState = BrowseUiState(category = BrowseCategory.TOP, anime = PreviewData.animeList),
-            onIntent = {},
-            onBack = {}
+            uiState = BrowseUiState(
+                category = BrowseCategory.TOP,
+                anime = PreviewData.animeList,
+                filteredAnime = PreviewData.animeList,
+                availableTypes = listOf("TV", "Movie")
+            ),
+            onIntent = {}
         )
     }
 }

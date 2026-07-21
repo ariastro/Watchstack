@@ -62,6 +62,7 @@ data class AnimeDto(
     val background: String? = null,
     val season: String? = null,
     val year: Int? = null,
+    val type: String? = null,
     val broadcast: BroadcastDto? = null,
     val source: String? = null,
     val duration: String? = null,

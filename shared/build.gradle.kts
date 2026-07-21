@@ -39,6 +39,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
+            implementation(libs.androidx.core.ktx)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.driver.android)
             implementation(libs.coil.network.okhttp)
@@ -74,6 +75,8 @@ kotlin {
 
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor3)
+
+            implementation(libs.navigation3.ui)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
