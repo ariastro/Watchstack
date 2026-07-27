@@ -3,7 +3,7 @@
     <!-- Matches BrutalDarkPalette.background -->
     <color name="app_window_background">#0F172A</color>
 
-    <style name="Theme.MyAnimeTracker" parent="android:Theme.Material.NoActionBar">
+    <style name="Theme.Watchstack" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/app_window_background</item>
         <item name="android:colorBackground">@color/app_window_background</item>
         <item name="android:statusBarColor">@android:color/transparent</item>

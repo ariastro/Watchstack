@@ -1,6 +1,6 @@
-# AGENTS.md — MyAnimeTracker
+# AGENTS.md — Watchstack
 
-KMP anime tracker (Android + iOS). UI + business logic live in `:shared`; `:androidApp` is a thin host.
+KMP anime tracker (Android + iOS). Display name: **Watchstack**. UI + business logic live in `:shared`; `:androidApp` is a thin host.
 
 ## Modules
 
@@ -10,7 +10,7 @@ KMP anime tracker (Android + iOS). UI + business logic live in `:shared`; `:andr
 | `androidApp` | `MainActivity` → `initKoinAndroid` → `App()` |
 | `iosApp` | Xcode host; `MainViewController` starts Koin once |
 
-Root package: `io.sws.myanimetracker`.
+Root package: `io.sws.watchstack`.
 
 ## Commands
 
@@ -34,7 +34,7 @@ Versions catalog: `gradle/libs.versions.toml` (AGP 9, Kotlin 2.4, Compose MP 1.1
 ## Architecture (do not invent parallel patterns)
 
 ```
-shared/.../io/sws/myanimetracker/
+shared/.../io/sws/watchstack/
   core/           expect/actual + helpers
   domain/         models, repository interfaces, use cases
   data/           remote (Jikan), local (SQLDelight + memory), repository impls
@@ -77,12 +77,12 @@ Jikan can return **duplicate `malId`**. Always `distinctBy { malId }` before `it
 
 ### Compose resources
 
-Generated package: `myanimetracker.shared.generated.resources` (`Res.drawable.*`). Drawables under `shared/src/commonMain/composeResources/`.
+Generated package: `watchstack.shared.generated.resources` (`Res.drawable.*`). Drawables under `shared/src/commonMain/composeResources/`.
 
 ### SQLDelight
 
-- Schema: `shared/src/commonMain/sqldelight/io/sws/myanimetracker/db/AnimeDatabase.sq`
-- Generated package: `io.sws.myanimetracker.db`
+- Schema: `shared/src/commonMain/sqldelight/io/sws/watchstack/db/AnimeDatabase.sq`
+- Generated package: `io.sws.watchstack.db`
 - Driver: expect/actual `DatabaseFactory`
 
 Changing `.sq` requires rebuild so generated sources update.

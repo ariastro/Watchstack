@@ -102,3 +102,4 @@ test-results/
 *.temp
 *.bak
 .cache/
+AGENTS.md

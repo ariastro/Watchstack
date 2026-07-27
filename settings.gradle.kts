@@ -1,4 +1,4 @@
-rootProject.name = "MyAnimeTracker"
+rootProject.name = "Watchstack"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
