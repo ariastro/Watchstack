@@ -49,10 +49,10 @@ import io.sws.watchstack.presentation.theme.ThemeController
 import io.sws.watchstack.presentation.theme.resolveDark
 import watchstack.shared.generated.resources.Res
 import watchstack.shared.generated.resources.ic_bookmark
-import watchstack.shared.generated.resources.ic_home
 import watchstack.shared.generated.resources.ic_search
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import watchstack.shared.generated.resources.ic_house
 
 @Composable
 fun App() {
@@ -147,7 +147,7 @@ fun App() {
 
                 if (showBottomBar) {
                     val navItems = listOf(
-                        NavItem(label = "Home", icon = painterResource(Res.drawable.ic_home)),
+                        NavItem(label = "Home", icon = painterResource(Res.drawable.ic_house)),
                         NavItem(label = "Search", icon = painterResource(Res.drawable.ic_search)),
                         NavItem(label = "List", icon = painterResource(Res.drawable.ic_bookmark))
                     )

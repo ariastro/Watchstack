@@ -24,8 +24,8 @@ import io.sws.watchstack.presentation.theme.LocalBrutalTypography
 import io.sws.watchstack.presentation.theme.glassSurface
 import watchstack.shared.generated.resources.Res
 import watchstack.shared.generated.resources.ic_close
-import watchstack.shared.generated.resources.ic_search_off
 import org.jetbrains.compose.resources.painterResource
+import watchstack.shared.generated.resources.ic_search
 
 @Composable
 fun LoadingState(modifier: Modifier = Modifier) {
@@ -96,7 +96,7 @@ fun ErrorState(
 fun EmptyState(
     message: String,
     modifier: Modifier = Modifier,
-    icon: Painter = painterResource(Res.drawable.ic_search_off),
+    icon: Painter = painterResource(Res.drawable.ic_search),
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null
 ) {

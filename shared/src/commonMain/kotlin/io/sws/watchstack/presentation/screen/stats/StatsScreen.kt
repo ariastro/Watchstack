@@ -36,9 +36,9 @@ import io.sws.watchstack.presentation.theme.LocalBrutalTypography
 import io.sws.watchstack.presentation.theme.brutalBlock
 import io.sws.watchstack.presentation.theme.glassSurface
 import watchstack.shared.generated.resources.Res
-import watchstack.shared.generated.resources.ic_arrow_back
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
+import watchstack.shared.generated.resources.ic_arrow_left
 import kotlin.math.roundToInt
 
 @Composable
@@ -98,7 +98,7 @@ private fun StatsContent(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(Res.drawable.ic_arrow_back),
+                        painter = painterResource(Res.drawable.ic_arrow_left),
                         contentDescription = "Back",
                         tint = colors.textPrimary
                     )

@@ -18,7 +18,6 @@ data class HomeUiState(
 sealed interface HomeIntent {
     data object Load : HomeIntent
     data object Refresh : HomeIntent
-    data object OpenSearch : HomeIntent
     data object OpenSettings : HomeIntent
     data object OpenStats : HomeIntent
     data class AnimeClicked(val malId: Int, val anime: Anime? = null) : HomeIntent

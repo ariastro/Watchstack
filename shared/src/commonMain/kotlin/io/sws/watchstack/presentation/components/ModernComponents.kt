@@ -66,30 +66,11 @@ import io.sws.watchstack.presentation.animation.LocalSharedTransitionScope
 import io.sws.watchstack.presentation.theme.LocalBrutalColors
 import io.sws.watchstack.presentation.theme.LocalBrutalDimensions
 import io.sws.watchstack.presentation.theme.LocalBrutalTypography
-import io.sws.watchstack.presentation.theme.glassSurface
+import org.jetbrains.compose.resources.painterResource
 import watchstack.shared.generated.resources.Res
 import watchstack.shared.generated.resources.ic_bookmark
-import watchstack.shared.generated.resources.ic_home
+import watchstack.shared.generated.resources.ic_house
 import watchstack.shared.generated.resources.ic_search
-import org.jetbrains.compose.resources.painterResource
-
-@Composable
-fun ScoreBadge(score: Double, modifier: Modifier = Modifier) {
-    val colors = LocalBrutalColors.current
-    val dims = LocalBrutalDimensions.current
-    val typo = LocalBrutalTypography.current
-    Box(
-        modifier = modifier
-            .clip(shape = RoundedCornerShape(dims.radiusPill))
-            .background(
-                brush = Brush.horizontalGradient(listOf(colors.primary, colors.accent))
-            )
-            .padding(horizontal = 10.dp, vertical = 5.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = "\u2605 $score", style = typo.labelSmall, color = Color.White)
-    }
-}
 
 @Composable
 fun StatusPill(status: WatchStatus, modifier: Modifier = Modifier) {
@@ -112,7 +93,11 @@ fun StatusPill(status: WatchStatus, modifier: Modifier = Modifier) {
             .padding(horizontal = 10.dp, vertical = 4.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = label, style = LocalBrutalTypography.current.labelSmall, color = Color.White)
+        Text(
+            text = label,
+            style = LocalBrutalTypography.current.labelSmall,
+            color = Color.White
+        )
     }
 }
 
@@ -609,7 +594,7 @@ private fun BottomNavPreview() {
     PreviewContainer {
         BottomNavBar(
             items = listOf(
-                NavItem(label = "Home", icon = painterResource(Res.drawable.ic_home)),
+                NavItem(label = "Home", icon = painterResource(Res.drawable.ic_house)),
                 NavItem(label = "Search", icon = painterResource(Res.drawable.ic_search)),
                 NavItem(label = "List", icon = painterResource(Res.drawable.ic_bookmark))
             ),

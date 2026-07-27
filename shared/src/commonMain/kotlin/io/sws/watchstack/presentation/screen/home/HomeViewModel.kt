@@ -51,7 +51,6 @@ class HomeViewModel(
         when (intent) {
             is HomeIntent.Load -> load(isRefresh = false)
             is HomeIntent.Refresh -> load(isRefresh = true)
-            is HomeIntent.OpenSearch -> navigator.navigateRoot(SearchRoute)
             is HomeIntent.OpenSettings -> navigator.navigate(SettingsRoute)
             is HomeIntent.OpenStats -> navigator.navigate(StatsRoute)
             is HomeIntent.AnimeClicked -> navigator.navigate(DetailRoute(intent.malId, intent.anime))

@@ -68,9 +68,9 @@ import io.sws.watchstack.presentation.theme.LocalBrutalTypography
 import io.sws.watchstack.presentation.theme.brutalBlock
 import io.sws.watchstack.presentation.theme.glassSurface
 import watchstack.shared.generated.resources.Res
-import watchstack.shared.generated.resources.ic_arrow_back
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
+import watchstack.shared.generated.resources.ic_arrow_left
 
 @Composable
 fun DetailScreen(
@@ -468,7 +468,7 @@ private fun DetailTopBar(title: String, onBack: () -> Unit, modifier: Modifier =
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = painterResource(Res.drawable.ic_arrow_back),
+                painter = painterResource(Res.drawable.ic_arrow_left),
                 contentDescription = "Back",
                 tint = colors.textPrimary
             )
@@ -569,16 +569,6 @@ private fun CharacterCard(character: Character) {
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
-        character.voiceActorName?.let {
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = "VA: $it",
-                style = typo.labelSmall,
-                color = colors.textSecondary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
     }
 }
 

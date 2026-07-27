@@ -43,12 +43,12 @@ import io.sws.watchstack.presentation.theme.LocalBrutalTypography
 import io.sws.watchstack.presentation.theme.brutalBlock
 import io.sws.watchstack.presentation.theme.glassSurface
 import watchstack.shared.generated.resources.Res
-import watchstack.shared.generated.resources.ic_arrow_back
 import watchstack.shared.generated.resources.ic_bookmark
-import watchstack.shared.generated.resources.ic_home
 import watchstack.shared.generated.resources.ic_star
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
+import watchstack.shared.generated.resources.ic_arrow_left
+import watchstack.shared.generated.resources.ic_house
 
 @Composable
 fun SettingsScreen(
@@ -106,7 +106,7 @@ private fun SettingsContent(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(Res.drawable.ic_arrow_back),
+                        painter = painterResource(Res.drawable.ic_arrow_left),
                         contentDescription = "Back",
                         tint = colors.textPrimary
                     )
@@ -256,7 +256,7 @@ private fun ThemeModeIcon(mode: ThemeMode, selected: Boolean) {
         Icon(
             painter = painterResource(
                 when (mode) {
-                    ThemeMode.SYSTEM -> Res.drawable.ic_home
+                    ThemeMode.SYSTEM -> Res.drawable.ic_house
                     ThemeMode.LIGHT -> Res.drawable.ic_star
                     ThemeMode.DARK -> Res.drawable.ic_bookmark
                 }

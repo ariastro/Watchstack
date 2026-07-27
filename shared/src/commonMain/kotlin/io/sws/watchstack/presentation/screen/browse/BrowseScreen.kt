@@ -51,11 +51,11 @@ import io.sws.watchstack.presentation.theme.LocalBrutalDimensions
 import io.sws.watchstack.presentation.theme.LocalBrutalTypography
 import io.sws.watchstack.presentation.theme.glassSurface
 import watchstack.shared.generated.resources.Res
-import watchstack.shared.generated.resources.ic_arrow_back
-import watchstack.shared.generated.resources.ic_search_off
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import watchstack.shared.generated.resources.ic_arrow_left
+import watchstack.shared.generated.resources.ic_search
 
 @Composable
 fun BrowseScreen(
@@ -110,7 +110,7 @@ private fun BrowseContent(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(Res.drawable.ic_arrow_back),
+                    painter = painterResource(Res.drawable.ic_arrow_left),
                     contentDescription = "Back",
                     tint = colors.textPrimary
                 )
@@ -246,7 +246,7 @@ private fun BrowseContent(
             ) {
                 EmptyState(
                     message = "Nothing matches filters.",
-                    icon = painterResource(Res.drawable.ic_search_off)
+                    icon = painterResource(Res.drawable.ic_search)
                 )
             }
 

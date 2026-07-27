@@ -39,7 +39,6 @@ import io.sws.watchstack.core.seasonLabel
 import io.sws.watchstack.domain.model.TrackedAnime
 import io.sws.watchstack.presentation.PreviewContainer
 import io.sws.watchstack.presentation.PreviewData
-import io.sws.watchstack.presentation.components.BrutalSearchBar
 import io.sws.watchstack.presentation.components.ErrorState
 import io.sws.watchstack.presentation.components.HeroCarousel
 import io.sws.watchstack.presentation.components.HomeSkeleton
@@ -52,11 +51,11 @@ import io.sws.watchstack.presentation.theme.LocalBrutalDimensions
 import io.sws.watchstack.presentation.theme.LocalBrutalTypography
 import io.sws.watchstack.presentation.theme.glassSurface
 import watchstack.shared.generated.resources.Res
-import watchstack.shared.generated.resources.ic_chevron_right
 import watchstack.shared.generated.resources.ic_settings
 import watchstack.shared.generated.resources.ic_star
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
+import watchstack.shared.generated.resources.ic_arrow_right
 
 @Composable
 fun HomeScreen(
@@ -152,15 +151,6 @@ private fun HomeContent(
                                 )
                             }
                         }
-                        Spacer(modifier = Modifier.height(dims.spacingLg))
-                        BrutalSearchBar(
-                            query = "",
-                            onQueryChange = {},
-                            onSearch = { onIntent(HomeIntent.OpenSearch) },
-                            readOnly = true,
-                            onClick = { onIntent(HomeIntent.OpenSearch) },
-                            placeholder = "Search titles, studios…"
-                        )
                         Spacer(modifier = Modifier.height(dims.spacingXl))
                     }
                 }
@@ -332,7 +322,7 @@ private fun CategoryChip(label: String, onClick: () -> Unit) {
     ) {
         Text(text = label, style = typo.titleMedium, color = colors.textPrimary)
         Icon(
-            painter = painterResource(Res.drawable.ic_chevron_right),
+            painter = painterResource(Res.drawable.ic_arrow_right),
             contentDescription = null,
             tint = colors.primary
         )
