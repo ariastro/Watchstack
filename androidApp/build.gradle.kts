@@ -21,11 +21,11 @@ dependencies {
 }
 
 android {
-    namespace = "io.sws.watchstack"
+    namespace = "io.sws.myanimetracker"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "io.sws.watchstack"
+        applicationId = "io.sws.myanimetracker"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1

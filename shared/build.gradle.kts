@@ -21,7 +21,7 @@ kotlin {
     }
 
     androidLibrary {
-       namespace = "io.sws.watchstack.shared"
+       namespace = "io.sws.myanimetracker.shared"
        compileSdk = libs.versions.android.compileSdk.get().toInt()
        minSdk = libs.versions.android.minSdk.get().toInt()
 
@@ -39,7 +39,6 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
-            implementation(libs.androidx.core.ktx)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.driver.android)
             implementation(libs.coil.network.okhttp)
@@ -75,8 +74,6 @@ kotlin {
 
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor3)
-
-            implementation(libs.navigation3.ui)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -88,15 +85,10 @@ dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
 }
 
-// Keep stable Compose Res package when root project name changes (display brand ≠ codegen id).
-compose.resources {
-    packageOfResClass = "watchstack.shared.generated.resources"
-}
-
 sqldelight {
     databases {
         create("AnimeDatabase") {
-            packageName.set("io.sws.watchstack.db")
+            packageName.set("io.sws.myanimetracker.db")
         }
     }
 }

@@ -2,104 +2,51 @@
 *.apk
 *.ap_
 *.aab
+
+# Files for the ART/Dalvik VM
 *.dex
+
+# Java class files
 *.class
 
-# Generated folders
+# Generated files
 bin/
 gen/
 out/
-build/
-**/build/
-captures/
-.externalNativeBuild/
-.cxx/
 
-# Gradle
+# Gradle files
 .gradle/
-gradle-app.setting
-!gradle-wrapper.jar
-.gradletasknamecache
+build/
 
-# Local config / secrets
+# Local configuration file (sdk path, etc)
 local.properties
-*.jks
-*.keystore
-secrets.properties
-google-services.json
 
-# IDE
+# IntelliJ IDEA
 .idea/
 *.iml
 *.iws
 *.ipr
-.project
-.classpath
-.settings/
-.vscode/
-*.swp
-*~
+.idea_modules/
 
 # Kotlin
 .kotlin/
-*.kotlin_module
 
-# macOS
+# Android Studio Builds
+captures/
+
+# Keystore files
+*.jks
+*.keystore
+
+# External native build folder generated in Android Studio 2.2 and later
+.externalNativeBuild
+.cxx/
+
+# Version control
+.svn/
+
+# Mac OS
 .DS_Store
-.AppleDouble
-.LSOverride
-._*
 
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# Linux
-*~
-
-# Logs / dumps
-*.log
-*.hprof
-*.stackdump
-
-# Xcode / iOS
-iosApp/iosApp.xcodeproj/xcuserdata/
-iosApp/iosApp.xcodeproj/project.xcworkspace/xcuserdata/
-iosApp/**/DerivedData/
-iosApp/**/*.xcuserstate
-**/xcuserdata/
-*.moved-aside
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
-Pods/
-*.xccheckout
-*.xcscmblueprint
-
-# Compose / tooling
-*.orig
-*.rej
-
-# Node (repo-local opencode tooling)
-node_modules/
-.opencode/node_modules/
-package-lock.json
-
-# Test / coverage
-coverage/
-*.exec
-test-results/
-**/reports/tests/
-
-# Misc
-*.tmp
-*.temp
-*.bak
-.cache/
-AGENTS.md
+# opencode caches
+.opencode/
