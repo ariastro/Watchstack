@@ -48,5 +48,6 @@ captures/
 # Mac OS
 .DS_Store
 
-# opencode caches
+# opencode
 .opencode/
+AGENTS.md
