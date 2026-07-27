@@ -1,0 +1,159 @@
+-- AnimeDatabase.sq
+
+CREATE TABLE TrackedAnimeEntity (
+    mal_id INTEGER NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    title_japanese TEXT,
+    image_url TEXT,
+    synopsis TEXT,
+    score REAL,
+    episodes INTEGER,
+    status TEXT,
+    airing INTEGER NOT NULL DEFAULT 0,
+    rated TEXT,
+    genres TEXT NOT NULL DEFAULT '',
+    source TEXT,
+    duration TEXT,
+    rating TEXT,
+    year INTEGER,
+    season TEXT,
+    watch_status TEXT NOT NULL,
+    episodes_watched INTEGER NOT NULL DEFAULT 0,
+    user_rating INTEGER,
+    notes TEXT NOT NULL DEFAULT '',
+    where_to_watch TEXT NOT NULL DEFAULT '',
+    date_added INTEGER NOT NULL DEFAULT 0,
+    date_completed INTEGER
+);
+
+getAll:
+SELECT * FROM TrackedAnimeEntity
+ORDER BY date_added DESC;
+
+getByStatus:
+SELECT * FROM TrackedAnimeEntity
+WHERE watch_status = ?
+ORDER BY date_added DESC;
+
+getByMalId:
+SELECT * FROM TrackedAnimeEntity
+WHERE mal_id = ?;
+
+upsert:
+INSERT OR REPLACE INTO TrackedAnimeEntity (
+    mal_id, title, title_japanese, image_url, synopsis, score, episodes, status,
+    airing, rated, genres, source, duration, rating, year, season,
+    watch_status, episodes_watched, user_rating, notes, where_to_watch,
+    date_added, date_completed
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteByMalId:
+DELETE FROM TrackedAnimeEntity
+WHERE mal_id = ?;
+
+-- Remote list / detail disk cache (survives process death)
+
+CREATE TABLE RemoteListMeta (
+    cache_key TEXT NOT NULL PRIMARY KEY,
+    page INTEGER NOT NULL,
+    has_next INTEGER NOT NULL,
+    stored_at INTEGER NOT NULL
+);
+
+CREATE TABLE RemoteListItem (
+    cache_key TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    mal_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    title_japanese TEXT,
+    image_url TEXT,
+    synopsis TEXT,
+    score REAL,
+    episodes INTEGER,
+    status TEXT,
+    airing INTEGER NOT NULL DEFAULT 0,
+    rated TEXT,
+    genres TEXT NOT NULL DEFAULT '',
+    type TEXT,
+    source TEXT,
+    duration TEXT,
+    rating TEXT,
+    year INTEGER,
+    season TEXT,
+    trailer_url TEXT,
+    trailer_youtube_id TEXT,
+    PRIMARY KEY(cache_key, position)
+);
+
+CREATE TABLE DetailAnimeCache (
+    mal_id INTEGER NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    title_japanese TEXT,
+    image_url TEXT,
+    synopsis TEXT,
+    score REAL,
+    episodes INTEGER,
+    status TEXT,
+    airing INTEGER NOT NULL DEFAULT 0,
+    rated TEXT,
+    genres TEXT NOT NULL DEFAULT '',
+    type TEXT,
+    source TEXT,
+    duration TEXT,
+    rating TEXT,
+    year INTEGER,
+    season TEXT,
+    trailer_url TEXT,
+    trailer_youtube_id TEXT,
+    stored_at INTEGER NOT NULL
+);
+
+CREATE TABLE SearchHistoryEntity (
+    query TEXT NOT NULL PRIMARY KEY,
+    searched_at INTEGER NOT NULL
+);
+
+getRemoteListMeta:
+SELECT * FROM RemoteListMeta WHERE cache_key = ?;
+
+upsertRemoteListMeta:
+INSERT OR REPLACE INTO RemoteListMeta (cache_key, page, has_next, stored_at)
+VALUES (?, ?, ?, ?);
+
+deleteRemoteListItems:
+DELETE FROM RemoteListItem WHERE cache_key = ?;
+
+getRemoteListItems:
+SELECT * FROM RemoteListItem WHERE cache_key = ? ORDER BY position ASC;
+
+insertRemoteListItem:
+INSERT OR REPLACE INTO RemoteListItem (
+    cache_key, position, mal_id, title, title_japanese, image_url, synopsis, score,
+    episodes, status, airing, rated, genres, type, source, duration, rating, year,
+    season, trailer_url, trailer_youtube_id
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+getDetailCache:
+SELECT * FROM DetailAnimeCache WHERE mal_id = ?;
+
+upsertDetailCache:
+INSERT OR REPLACE INTO DetailAnimeCache (
+    mal_id, title, title_japanese, image_url, synopsis, score, episodes, status,
+    airing, rated, genres, type, source, duration, rating, year, season,
+    trailer_url, trailer_youtube_id, stored_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+getSearchHistory:
+SELECT query FROM SearchHistoryEntity ORDER BY searched_at DESC LIMIT ?;
+
+upsertSearchHistory:
+INSERT OR REPLACE INTO SearchHistoryEntity (query, searched_at) VALUES (?, ?);
+
+deleteSearchHistoryQuery:
+DELETE FROM SearchHistoryEntity WHERE query = ?;
+
+clearSearchHistory:
+DELETE FROM SearchHistoryEntity;
+
+getAllSearchHistoryKeys:
+SELECT query FROM SearchHistoryEntity ORDER BY searched_at DESC;
