@@ -129,10 +129,7 @@ private fun DetailContent(
                 )
         ) {
             if (anime != null) {
-                DetailTopBar(
-                    title = anime.title,
-                    onBack = { onIntent(DetailIntent.GoBack) }
-                )
+                Spacer(modifier = Modifier.height(WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 44.dp + dims.spacingMd * 2))
             }
             when {
                 uiState.isLoading && anime == null -> {
@@ -154,6 +151,14 @@ private fun DetailContent(
                     onIntent = onIntent
                 )
             }
+        }
+        
+        if (anime != null) {
+            DetailTopBar(
+                title = anime.title,
+                onBack = { onIntent(DetailIntent.GoBack) },
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
         }
 
         if (anime != null) {
@@ -452,11 +457,10 @@ private fun DetailTopBar(title: String, onBack: () -> Unit, modifier: Modifier =
     val colors = LocalBrutalColors.current
     val dims = LocalBrutalDimensions.current
     val typo = LocalBrutalTypography.current
-    val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = statusTop)
+            .windowInsetsPadding(WindowInsets.statusBars)
             .padding(horizontal = dims.paddingScreen, vertical = dims.spacingMd),
         verticalAlignment = Alignment.CenterVertically
     ) {

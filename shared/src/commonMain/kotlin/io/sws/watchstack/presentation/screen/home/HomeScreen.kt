@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -106,12 +107,14 @@ private fun HomeContent(
             )
 
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.statusBars),
                 contentPadding = PaddingValues(bottom = dims.navBarHeight + dims.spacingXl)
             ) {
                 item(key = "header", contentType = "header") {
                     Column(modifier = Modifier.padding(horizontal = dims.paddingScreen)) {
-                        Spacer(modifier = Modifier.height(statusTop + dims.spacingLg))
+                        Spacer(modifier = Modifier.height(dims.spacingLg))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically

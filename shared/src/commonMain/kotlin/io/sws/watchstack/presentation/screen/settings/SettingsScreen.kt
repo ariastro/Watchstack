@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -90,11 +91,14 @@ private fun SettingsContent(
                 )
         )
 
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.statusBars)
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = statusTop)
                     .padding(horizontal = dims.paddingScreen, vertical = dims.spacingMd),
                 verticalAlignment = Alignment.CenterVertically
             ) {
